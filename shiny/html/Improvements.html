@@ -1,0 +1,92 @@
+<html>
+
+<head>
+<style type="text/css">
+.knitr .inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+}
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.rimage .left {
+  text-align: left;
+}
+.rimage .right {
+  text-align: right;
+}
+.rimage .center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.str {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.std {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<title>Improvements</title>
+</head>
+
+<body>
+<h2>Overall</h2>
+<p>We can think of several improvements for going further with this study, including perfecting the methods used, and using other methods.</p>
+<h2>Combining predictors</h2>
+<p>One can think of combining 2 or more among the 4 predictors, using a linear combination of their probabilities (e.g. Stupid back with stemming and Katz backoff).</p>
+<h2>Interpolation methods</h2>
+<p>Another class of algorithms could be tested, which interpolate probabilities of the different N-grams levels, as Kneser-Ney method, and Jelinek & Mercer.</p>
+<h2>Secondary Stemming</h2>
+<p>We can think of using stemmed grams only if non stemmed grams have given no results at a specific ngrams level, before backing off to next level.</p>
+<h2>Input history</h2>
+<p>We can use words typed by the user  to train the system following his habits. The idea is to interpolate between predictions and typing history.</p>
+<h2>Processing / Memory optimisation</h2>
+<p>To get lighter data objects and faster computations, one could think of storing probabilities in 2 small columns (8 bits / 4 bits for value and exponent).</p>
+<h2>Use dictionaries</h2>
+<p>Accuracy could be better with using a dictionary, giving grammatical / type categories for each word (VERB, ADJECTIVE, ACTION.VERB, etc.), stored in parallel with ngrams values, like stemming was. This approach is available in the quanteda package, but implies further computations, on runtime as well.</p>
+<h2>Other special words</h2>
+<p>As "unknown" words were translated to UNK token durin training, numbers coulds have be translated to NUMBER tokens, and so on for other special word types (hashtags, URLs, ...).</p>
+<h2>Other methods</h2>
+<p>Many other techniques couls have be used fir prediction, including neural networks, tree classifiers, etc.</p>
+<p>Swiftkey has thorough changed his method recently, switching to neural network.</p>
+
+
+</body>
+</html>

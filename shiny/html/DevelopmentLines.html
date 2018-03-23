@@ -1,0 +1,147 @@
+<html>
+
+<head>
+<style type="text/css">
+.knitr .inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+}
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.rimage .left {
+  text-align: left;
+}
+.rimage .right {
+  text-align: right;
+}
+.rimage .center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.str {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.std {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<title>Developpment lines</title>
+</head>
+
+<body>
+<h2>Overall</h2>
+<p>This is the description of all steps preformed in the study, from gettin raw date to prediction and accuracy measurements.</p>
+<h2>Data loading</h2>
+<p>The 3 data files can be loaded entirely using readLines method, and merged in a single dataset..</p>
+<h2>Data splitting</h2>
+<p>We split randomly the data into 3 sets
+<ul>
+<li>Training set : used to train the models (entirely or a sample)</li>
+<li>Held out testing set : small dataset used to first validation of improvements and parameter optimisations</li>
+<li>Testing set : reasonably big dataset used to validate improvements</li>
+</ul>
+</p>
+<h2>Data preprocessing</h2>
+<h3>Sentences</h3>
+<p>The training document set is split into sentences using the quanteda package. Tokens will be computed for each sentence afterwards. Special words BEGIN and END are added respectively at the beginnin and at the end of each sentence.</p>
+<h3>Cleaning</h3>
+<p>Given the huge amount of data, sentences with bad characters are simply dropped (e.g. symbols, numbers, and so on) in the training set. The rest is used as the initial corpus.</p>
+<p></p>
+<h2>Vocabulary</h2>
+<p>After global 1-grams tokenisation, we delete the 1-grams with frequency 1, and keep the rest of the word types as the vocabulary.</p>
+<h2>N-gram tokenising</h2>
+<p>Then using quanteda package again, we compute N-grams (for N = 1, 2, 3, 4), after having replaced OOV (Out Of Vocabulary) words with special word UNK (treated as any other word in next steps).</p>
+<p>For computation to be achieved using a reasonable amount of memory, the training documnet set is splitted in chunks (for each n-grams level), and tokenisation is performed for each chunk individually results is stored in a separate file.</p>
+<h2>Combining result files</h2>
+<p>Using all chunk files, we have to combine frequency values for words showing up in diferent files. We get then 4 files with N-grams (1-grams, 2-grams, 3-grams and 4-grams).</p>
+<h2>Statistical computations on N-grams</h2>
+<p>Computations implying one level at a time are perfomed on each n-grams file, as Good-Turing discounting factors, Katz discounting factors, with a estimation of counts performed using a linear regression in a log-log space.</p>
+<h2>Paired N-grams and other computations</h2>
+<p>Paired n-grams are computed : N-gram is splitted into (N-1)-gram (for N>1) for the first N-1 words and 1-gram for the last. The N-1 grams are the one to looked for at prediction time, according to last words typed, and the 1-gram will be the prediction.</p>
+<p>At this step, computations implying two levels at a time are perfomed on each n-grams file, as Maximum Likelihood and Katz backoff factors.</p>
+<p>These operations may be splitted into steps for large datasets, storing intermediary results to files and restarting RStudio to save memory before running the following step from the intermediary results.</p>
+<h2>Pruning</h2>
+<p>In order to lower the resulting number of lines, as N-grams with frequency 1 contains nearly 90% of the vlues, we delete in the paired N-grams files records with frequency 1.</p>
+<p>This is reasonable, as usually in Backoff models, N-grams with frequency 1 are to be considered as having a 0 frequency.</p>
+
+<h2>Prediction algorithms</h2>
+<p>The following algorithms have been implemented:
+<ul>
+<li>Stupid Backoff : uses Maximum Likelihood as probability, and 0.4 as constant backoff factor</li>
+<li>Stupid Backoff with stemming : idem, but looks for matching between stemmed (N-1) grams and stemmed input</li>
+<li>Katz Backoff : uses Maximum Likelihood multiplied by Katz discounting fator after Good-Turing smoothing, and backoff factors depending on (N-2) grams</li>
+<li>Katz Backoff with stemming : idem, but looks for matching between stemmed (N-1) grams and stemmed input</li>
+</ul>
+</p>
+<h2>Accuracy</h2>
+<p>In order to compute accuracy on a given test set, we split this text into sentences (but keep "bad" cases), compute the paired 4-grams, and then compare predictions using 3-grams as input with the test 1-grams.</p>
+<p>We compute 3 levels of accuracy:
+<li>Acc: accuracy of first prediction (proportion of cases where the first prediction is the word to guess)</li>
+<li>Acc_3: accuracy of first 3 predictions (proportion of cases where the word to guess is in the 3 first predictions)</li>
+<li>Acc_10: accuracy of first 10 predictions (proportion of cases where the word to guess is in the 10 first predictions)</li></p>
+<h2>References</h2>
+<p>The following references hav been used for this study</p>
+<p>
+Basic Text Processing (Dan Jurafsky and Christopher Manning / Stanford University)
+<br>
+<a href="http://spark-public.s3.amazonaws.com/nlp/slides/textprocessingboth.pdf">http://spark-public.s3.amazonaws.com/nlp/slides/textprocessingboth.pdf</a></p>
+<p>
+Speech and Language Processing (Daniel Jurafsky and James H. Martin, 1999)
+<br>
+<a href="http://www.deepsky.com/~merovech/voynich/voynich_manchu_reference_materials/PDFs/jurafsky_martin.pdf">http://www.deepsky.com/~merovech/voynich/voynich_manchu_reference_materials/PDFs/jurafsky_martin.pdf</a></p>
+<p>
+Language Modeling (Dan Jurafsky and Christopher Manning / Stanford University)
+<br>
+<a href="http://spark-public.s3.amazonaws.com/nlp/slides/languagemodeling.pdf">http://spark-public.s3.amazonaws.com/nlp/slides/languagemodeling.pdf</a></p>
+<p>
+NLP Lunch Tutorial: Smoothing (Bill MacCartney / Stanford University, 2005)
+<br>
+<a href="https://nlp.stanford.edu/~wcmac/papers/20050421-smoothing-tutorial.pdf">https://nlp.stanford.edu/~wcmac/papers/20050421-smoothing-tutorial.pdf</a></p>
+<p>
+Wikipedia - Katz's back-off model
+<br>
+<a href="https://en.wikipedia.org/wiki/Katz%27s_back-off_model">https://en.wikipedia.org/wiki/Katz%27s_back-off_model</a></p>
+<p>
+Speech and Language Processing - An Introduction to Natural Language Processing, Computational Linguistics, and Speech Recognition (Daniel Jurafsky / Stanford University, James H. Martin / University of Colorado at Boulder)
+<br>
+<a href="https://web.stanford.edu/~jurafsky/slp3/ed3book.pdf">https://web.stanford.edu/~jurafsky/slp3/ed3book.pdf</a></p>
+</body>
+</html>

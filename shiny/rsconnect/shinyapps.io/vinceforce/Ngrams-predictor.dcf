@@ -1,0 +1,12 @@
+name: Ngrams-predictor
+title: Ngrams-predictor
+username:
+account: vinceforce
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 291763
+bundleId: 1279952
+url: https://vinceforce.shinyapps.io/Ngrams-predictor/
+when: 1521622088.92171
+asMultiple: FALSE
+asStatic: FALSE
