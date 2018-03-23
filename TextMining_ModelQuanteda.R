@@ -99,7 +99,7 @@ sampleDS <- function(v, nbsamples=NULL, prop) {
   return(v[inTrain])
 }
 
-train.sample <- sampleDS(training.full, prop = .01)
+train.sample <- sampleDS(training.full, prop = .001)
 test.sample <- sampleDS(testing.full, prop = .05)
 
 # train.sample <- training.full
@@ -193,7 +193,7 @@ docstofiles <- function(docs, ii) {
   ng.4.train <- ng[["ng.4"]]
   write.csv2(ng.4.train, paste0("ngrams/4/ng.4.train_", ii, ".csv"), row.names = FALSE)
 }
-chunk_size <- 5000
+chunk_size <- 1000
 nb_chunks <- floor(length(train.sample) / chunk_size)
 print(paste0("nb_chunks : ", nb_chunks))
 
@@ -470,6 +470,9 @@ pairedngrams <- function(ngram, nbGram, stem = FALSE, pngram1 = NULL, k = 5) {
 
     ng.paired[pngram1, on=.(grams.n), freq.n:=i.freq]
     ng.paired[, p.mle:=(freq / freq.n)]
+    # MLE NORMALISATION
+    N.mle <- sum(ng.paired$p.mle)
+    ng.paired[, p.mle:=(p.mle / N.mle)]
     ng.paired[, p.gts:=d.gts * p.mle]
     ng.paired[, p.ktz:=d.ktz * p.mle]
     
