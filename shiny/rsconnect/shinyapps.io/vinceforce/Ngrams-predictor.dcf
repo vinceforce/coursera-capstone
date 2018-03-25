@@ -5,8 +5,8 @@ account: vinceforce
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 291763
-bundleId: 1286582
+bundleId: 1286946
 url: https://vinceforce.shinyapps.io/Ngrams-predictor/
-when: 1521950637.19661
+when: 1521984470.3646
 asMultiple: FALSE
 asStatic: FALSE

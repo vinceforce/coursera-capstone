@@ -63,7 +63,7 @@ removeFirstWord <- function(s) {
   return(rfw)
 }
 
-ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocessinput = TRUE) {
+ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocessinput = TRUE, inc_unk = FALSE) {
   if (quality == "high") {
     png.4 <- png.4.high
     png.3 <- png.3.high
@@ -116,6 +116,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
       input.stem <- removeFirstWord(input.stem)
     }
     if (ngram::wordcount(input) == 3) {
+      if (inc_unk) matches <- png.4[grams.3 == input]
+      else matches <- png.4[grams.3 == input & grams.0 != "UNK"]
       matches <- png.4[grams.3 == input]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
@@ -126,7 +128,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
         res.ktz <- rbind(res.ktz, data.frame(n = rep(4, nrow(res.matches)), grams.n = res.matches$grams.3,
                                              grams = res.matches$grams.0, p.ktz = res.matches$p.ktz))
       } 
-      matches <- png.4[grams.3.stem == input.stem]
+      if (inc_unk) matches <- png.4[grams.3.stem == input.stem]
+      else matches <- png.4[grams.3.stem == input.stem & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -140,7 +143,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
       input.stem <- removeFirstWord(input.stem)
     }
     if (ngram::wordcount(input) == 2) {
-      matches <- png.3[grams.2 == input]
+      if (inc_unk) matches <- png.3[grams.2 == input]
+      else matches <- png.3[grams.2 == input & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -155,7 +159,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
                                                   grams = res.matches$grams.0, p.ktz = res.matches$alpha.n * res.matches$p.ktz))
         
       } 
-      matches <- png.3[grams.2.stem == input.stem]
+      if (inc_unk) matches <- png.3[grams.2.stem == input.stem]
+      else matches <- png.3[grams.2.stem == input.stem & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -173,7 +178,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
       input.stem <- removeFirstWord(input.stem)
     }
     if (ngram::wordcount(input) == 1) {
-      matches <- png.2[grams.1 == input]
+      if (inc_unk) matches <- png.2[grams.1 == input]
+      else matches <- png.2[grams.1 == input & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -187,7 +193,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
         else res.ktz <- rbind(res.ktz, data.frame(n = rep(2, nrow(res.matches)), grams.n = res.matches$grams.1,
                                                   grams = res.matches$grams.0, p.ktz = res.matches$alpha.n * res.matches$p.ktz))
       } 
-      matches <- png.2[grams.1.stem == input.stem]
+      if (inc_unk) matches <- png.2[grams.1.stem == input.stem]
+      else matches <- png.2[grams.1.stem == input.stem & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -210,7 +217,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
     if (no_input) {
       input = "BEGIN"
       input.stem = "BEGIN"
-      matches <- png.2[grams.1 == input]
+      if (inc_unk) matches <- png.2[grams.1 == input]
+      else matches <- png.2[grams.1 == input & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -220,7 +228,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
         res.ktz <- rbind(res.ktz, data.frame(n = rep(2, nrow(res.matches)), grams.n = res.matches$grams.1,
                                              grams = res.matches$grams.0, p.ktz = res.matches$p.ktz))
       } 
-      matches <- png.2[grams.1.stem == input.stem]
+      if (inc_unk) matches <- png.2[grams.1.stem == input.stem]
+      else matches <- png.2[grams.1.stem == input.stem & grams.0 != "UNK"]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -232,7 +241,8 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
       }
     }
     else {
-      matches <- png.1[!is.na(png.1$p.mle)]
+      if (inc_unk) matches <- png.1[!is.na(png.1$p.mle)]
+      else matches <- png.1[!is.na(png.1$p.mle) & grams.0 != "UNK"]
       res.matches <- matches[order(p.mle, decreasing = TRUE)]
       res.gts <- rbind(res.gts, data.frame(n = rep(1, nrow(res.matches)), grams.n = res.matches$grams.0,
                                            grams = res.matches$grams.0, p.gts = d^3 * res.matches$p.mle))
@@ -614,7 +624,7 @@ pasteCRLF <- function(x, y) {
 }
 
 ngram.accuracy.all <- function(ngrams.test, d = d, quality) {
-  predict.dev.mat <- sapply(ngrams.test$grams.3, ngram.predict, quality, nbrep = 10, d = 0.4, k = 5, preprocessinput = FALSE)
+  predict.dev.mat <- sapply(ngrams.test$grams.3, ngram.predict, quality, nbrep = 10, d = 0.4, k = 5, preprocessinput = FALSE, inc_unk = TRUE)
   df.res <- data.frame()
   df.trace <- data.frame(input = ngrams.test$grams.3)
   

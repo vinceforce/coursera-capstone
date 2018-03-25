@@ -10,10 +10,12 @@
 <p>We can think of several improvements for going further with this study, including perfecting the methods used, and using other methods.</p>
 <h2>Bigger training data</h2>
 <p>Provided we have a long time to perform calculations (numerous intermediary steps necessary to achieve them), a bigger training set could be used, with a more radical pruning at the end (frequency < 10, for example).</p>
-<h2>Higher levl N-grams</h2>
+<h2>Higher level N-grams</h2>
 <p>We could compute higher level N-grams (5-grams, 6-grams) to improve accuracy, despite it would lead to longest computations in training phase and higher memory usage on runtime.</p>
 <h2>Backoff factors</h2>
 <p>Calculation of backoff factors have lead to values greater than one for final Katz backoff "probabilities". A normalisation could be added.</p>
+<h2>END and UNK</h2>
+<p>Prababilities for these special tokens seems to be biased (e.g. END shows up too frequently as prediction, and therefore has been deleted from possible predictions, and UNK has been dropped from prediction in interactive mode, but not in accuracy mode). Further investigations could be performed to fix this.</p>
 <h2>Combining predictors</h2>
 <p>One can think of combining 2 or more among the 4 predictors, using a linear combination of their probabilities (e.g. Stupid backoff with stemming and Katz backoff).</p>
 <h2>Interpolation methods</h2>
