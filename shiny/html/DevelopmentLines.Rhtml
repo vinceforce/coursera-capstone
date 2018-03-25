@@ -1,16 +1,17 @@
 <html>
 
 <head>
-<title>Developpment lines</title>
+<title>Development lines</title>
+<link rel="stylesheet" type="text/css" href="custom.css">
 </head>
 
 <body>
 <h2>Overall</h2>
-<p>This is the description of all steps preformed in the study, from gettin raw date to prediction and accuracy measurements.</p>
+<p>This is the description of all steps performed in the study, from loading raw data to prediction and accuracy measurements.</p>
 <h2>Data loading</h2>
-<p>The 3 data files can be loaded entirely using readLines method, and merged in a single dataset..</p>
+<p>The 3 data files can be loaded entirely using readLines method, and merged into a single dataset.</p>
 <h2>Data splitting</h2>
-<p>We split randomly the data into 3 sets
+<p>We split the data into 3 sets randomly
 <ul>
 <li>Training set : used to train the models (entirely or a sample)</li>
 <li>Held out testing set : small dataset used to first validation of improvements and parameter optimisations</li>
@@ -19,44 +20,89 @@
 </p>
 <h2>Data preprocessing</h2>
 <h3>Sentences</h3>
-<p>The training document set is split into sentences using the quanteda package. Tokens will be computed for each sentence afterwards. Special words BEGIN and END are added respectively at the beginnin and at the end of each sentence.</p>
+<p>The training document set is split into sentences using the quanteda package. Tokens are computed for each sentence afterwards. Special words BEGIN and END are added respectively at the beginning and at the end of each sentence.</p>
 <h3>Cleaning</h3>
-<p>Given the huge amount of data, sentences with bad characters are simply dropped (e.g. symbols, numbers, and so on) in the training set. The rest is used as the initial corpus.</p>
+<p>Given the huge amount of data, sentences with bad characters are simply dropped (e.g. symbols, numbers, and so on) in the training set. Remaining sentences are used as the initial corpus.</p>
 <p></p>
 <h2>Vocabulary</h2>
-<p>After global 1-grams tokenisation, we delete the 1-grams with frequency 1, and keep the rest of the word types as the vocabulary.</p>
+<p>After global 1-grams tokenisation, we delete the 1-grams with frequency 1, and keep the remaining word types as the vocabulary.</p>
 <h2>N-gram tokenising</h2>
 <p>Then using quanteda package again, we compute N-grams (for N = 1, 2, 3, 4), after having replaced OOV (Out Of Vocabulary) words with special word UNK (treated as any other word in next steps).</p>
 <p>For computation to be achieved using a reasonable amount of memory, the training documnet set is splitted in chunks (for each n-grams level), and tokenisation is performed for each chunk individually results is stored in a separate file.</p>
 <h2>Combining result files</h2>
-<p>Using all chunk files, we have to combine frequency values for words showing up in diferent files. We get then 4 files with N-grams (1-grams, 2-grams, 3-grams and 4-grams).</p>
+<p>Using all chunk files, we have to combine frequency values for words showing up in different files. We get then 4 files with N-grams (1-grams, 2-grams, 3-grams and 4-grams).</p>
 <h2>Statistical computations on N-grams</h2>
-<p>Computations implying one level at a time are perfomed on each n-grams file, as Good-Turing discounting factors, Katz discounting factors, with a estimation of counts performed using a linear regression in a log-log space.</p>
+<p>Computations implying one level at a time are perfomed on each n-grams file, as Good-Turing discounting factors, Katz discounting factors, with a estimation of counts performed using a linear regression in a log-log space, and a correction of frequency 1 with adding grams containing UNK.</p>
+<figure style="text-align: center">
+  <img src="figure/Formula_Good-Turing-Smoothing.png" style="height:45" />
+  <figcaption>Good-Turing count</figcaption>
+</figure>
+<figure style="text-align: center">
+  <img src="figure/Formula_Good-Turing-Katz-Smoothing.png" style="height:60"  />
+  <figcaption>Katz corrected Good-Turing count</figcaption>
+</figure>
 <h2>Paired N-grams and other computations</h2>
-<p>Paired n-grams are computed : N-gram is splitted into (N-1)-gram (for N>1) for the first N-1 words and 1-gram for the last. The N-1 grams are the one to looked for at prediction time, according to last words typed, and the 1-gram will be the prediction.</p>
+<p>Paired n-grams are computed : N-gram is splitted into (N-1)-gram (for N>1) for the first N-1 words and 1-gram for the last. The N-1 grams are the one to look for at prediction time, according to last words typed, and the 1-gram will be the prediction.</p>
 <p>At this step, computations implying two levels at a time are perfomed on each n-grams file, as Maximum Likelihood and Katz backoff factors.</p>
-<p>These operations may be splitted into steps for large datasets, storing intermediary results to files and restarting RStudio to save memory before running the following step from the intermediary results.</p>
+<figure style="text-align: center">
+  <img src="figure/Formula_MLE.png" style="height:55" />
+  <figcaption>Maximum Likelihood score</figcaption>
+</figure>
+<figure style="text-align: center">
+  <img src="figure/Formula_Katz-Prob.png" style="height:80" />
+  <figcaption>Katz backoff probability</figcaption>
+</figure>
+<figure style="text-align: center">
+  <img src="figure/Formula_Theta.png" style="height:40" />
+  <figcaption>Theta function definition</figcaption>
+</figure>
+<figure style="text-align: center">
+  <img src="figure/Formula_Katz-alpha.png" style="height:60" />
+  <figcaption>Katz backoff factors</figcaption>
+</figure>
+<p>These operations may be splitted into steps for large datasets, storing intermediary results to files and restarting RStudio to lower memory usage before running the following step from the intermediary results.</p>
 <h2>Pruning</h2>
-<p>In order to lower the resulting number of lines, as N-grams with frequency 1 contains nearly 90% of the vlues, we delete in the paired N-grams files records with frequency 1.</p>
-<p>This is reasonable, as usually in Backoff models, N-grams with frequency 1 are to be considered as having a 0 frequency.</p>
+<p>In order to lower the resulting number of lines, as N-grams with frequency 1 contains nearly 90% of the values, we delete in the paired N-grams files records with frequency 1.</p>
+<p>This is reasonable, as usually in Backoff models, N-grams with frequency 1 are to be considered as having 0 frequency.</p>
+<p>At this step as well, records with profanity words as prediction are deleted, using an external file of about 700 profanity words. Records with BEGIN or UNK as prediction are also removed from paired N-grams.</p>
 
 <h2>Prediction algorithms</h2>
 <p>The following algorithms have been implemented:
 <ul>
-<li>Stupid Backoff : uses Maximum Likelihood as probability, and 0.4 as constant backoff factor</li>
+<li>Stupid Backoff : uses Maximum Likelihood as score, and 0.4 as constant backoff factor</li>
 <li>Stupid Backoff with stemming : idem, but looks for matching between stemmed (N-1) grams and stemmed input</li>
-<li>Katz Backoff : uses Maximum Likelihood multiplied by Katz discounting fator after Good-Turing smoothing, and backoff factors depending on (N-2) grams</li>
+<li>Katz Backoff : uses Maximum Likelihood multiplied by Katz discounting factor (after Good-Turing smoothing), and backoff factors depending on (N-2) grams</li>
 <li>Katz Backoff with stemming : idem, but looks for matching between stemmed (N-1) grams and stemmed input</li>
 </ul>
 </p>
+<p>Vocabulary computed in train phase is used to replace unknown words in input phrase by UNK token. Phrase is parsed to look for sentence delimiters, for input for prediction to never cross sentence delimiters. </p>
 <h2>Accuracy</h2>
 <p>In order to compute accuracy on a given test set, we split this text into sentences (but keep "bad" cases), compute the paired 4-grams, and then compare predictions using 3-grams as input with the test 1-grams.</p>
 <p>We compute 3 levels of accuracy:
 <li>Acc: accuracy of first prediction (proportion of cases where the first prediction is the word to guess)</li>
 <li>Acc_3: accuracy of first 3 predictions (proportion of cases where the word to guess is in the 3 first predictions)</li>
 <li>Acc_10: accuracy of first 10 predictions (proportion of cases where the word to guess is in the 10 first predictions)</li></p>
+<p>Below are the results</p>
+<h5>Small data (training with 0.1% of original data)</h5>
+<!--begin.rcode echo=FALSE
+library(knitr)
+library(kableExtra)
+acc_table <- read.csv2("small/accuracy_table.csv", sep = ",")
+kable(acc_table, digits = 6, format = "html") %>% kable_styling(bootstrap_options = c("striped"))
+end.rcode-->
+<h5>Medium data (training with 1% of original data)</h5>
+<!--begin.rcode echo=FALSE
+acc_table <- read.csv2("medium/accuracy_table.csv", sep = ",")
+kable(acc_table, digits = 6, format = "html") %>% kable_styling(bootstrap_options = c("striped"))
+end.rcode-->
+<h5>Big data (training with 10% of original data)</h5>
+<!--begin.rcode echo=FALSE
+acc_table <- read.csv2("big/accuracy_table.csv", sep = ",")
+kable(acc_table, digits = 6, format = "html") %>% kable_styling(bootstrap_options = c("striped"))
+end.rcode-->
+
 <h2>References</h2>
-<p>The following references hav been used for this study</p>
+<p>The following references have been used for this study</p>
 <p>
 Basic Text Processing (Dan Jurafsky and Christopher Manning / Stanford University)
 <br>

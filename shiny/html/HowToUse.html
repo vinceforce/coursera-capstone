@@ -63,21 +63,22 @@
   font-weight: bold;
 }
 </style>
+<link rel="stylesheet" type="text/css" href="custom.css">
 <title>How to use</title>
 </head>
 
 <body>
 <h2>Overall</h2>
 <div style="text-align: center">
-<div style="max-heigh:200px; display: inline; border: 1px red solid; padding: 5px"><img src="figure/desktop-view.png" height = "200"/></div>
+<div style="max-heigh:200px; display: inline; padding: 5px"><img src="figure/desktop-view.png" height = "200" style="border: 1px #3E658E solid"/ ></div>
 <div style="min-width: 100px; display: inline"></div>
-<div style="max-heigh:200px; display: inline; border: 1px red solid; padding: 5px"><img src="figure/mobile-view.png" height=200/></div>
+<div style="max-heigh:200px; display: inline; padding: 5px"><img src="figure/mobile-view.png" height=200 style="border: 1px #3E658E solid" /></div>
 </div>
-<p>The application shows the behaviour of 4 variants of backoff n-grams prediction alorithms. It provides an interactive prediction dashboard, giving, for an input phrase, for each algorithm, the 10 first predictions, a 3D-plot figurin the predictions, and a word cloud. It provides an accuray measurement tool as well, again for each of the 4 alorithms.</p>
-<p>The application is responsive thanks to Bootstrap framework, it means the interface changes depending on the size of the device used.</p>
+<p>The application shows the behaviour of 4 variants of backoff n-grams prediction alorithm. It provides an interactive prediction interface, giving, for an input phrase, for each algorithm, the 10 first predictions, a 3D-plot figuring the predictions, and a word cloud. It provides an accuray measurement tool as well, again for each of the 4 algorithms.</p>
+<p>The application is responsive thanks to Bootstrap framework, it means the interface changes depending on the size of the device used for browsing.</p>
 <h2>Interactive prediction</h2>
 <h3>Display options</h3>
-<p>You can choose to hide any part of the results, by clicking on the toggle buttons on the top of the interface, under the overal navigation bar:</p>
+<p>You can choose to hide any part of the results, by clicking on the toggle buttons on the top of the interface, under the overall navigation bar:</p>
 <img src = "figure/display-options.png" />
 <ul>
 <li>Suggestions : hide / show suggestions</li>
@@ -91,29 +92,31 @@
 <p>You can either choose the quality level, by clicking on the quality button bar:</p>
 <img src = "figure/quality-options.png" />
 <ul>
-<li>High : data come from 10% of the original data</li>
-<li>Medium : data come from 1% of the original data</li>
-<li>Low : data come from 0.1% of the original data</li>
+<li>High : training data from 10% of initial data</li>
+<li>Medium : training data from 1% of initial data</li>
+<li>Low : training data from 0.1% of initial data</li>
 </ul>
-<p>Note that higher is the quality, slower is the prediction.</p>
+<p>Of course higher the quality, slower the prediction.</p>
+<p>Please note that prediction has to be triggered again (type backspace and space if needed).</p>
 <h3>Input phrase</h3>
 <p>If you type a phrase, suggestions and 3D plots are refreshed each time you type a space, as word clouds are refreshed each time input phrase content changes.</p>
 <h3>Suggestions</h3>
-<p>They are shown as buttons you can click on to add the corresponding word to the input phrase. Please note that END value (prediction of the end of the phrase) can be part of suggestions, but will not be clickable.</p>
+<p>They are shown as buttons you can click on to add the corresponding word to the input text. Please note that END value (prediction of the end of the phrase) can be part of suggestions, but will not be clickable.</p>
 <h3>3D plots</h3>
-<p>Each plot gives a 3D view on predictions. On the first dimension, we find the unique values among the 10 first predictions. On the second, we find the N-grams level (4 to 1) used for retrieving the prediction result(s). On the third dimension, we find the probability of the corresponding N-gram, after discounting.</p>
+<p>Each plot gives a 3D view on predictions. On first dimension, we find the unique values among the 10 first predictions. On the second, we find the N-grams level (4 to 1) used for retrieving the prediction result(s). On the third dimension, we find the score / probability of the corresponding N-gram (after discounting concerning Katz Backoff).</p>
 <p>You can roll over the plot with your mouse to get values displayed. You can either rotate the plot following three dimensions to have a different view on results, and you can use tools provided with each plot (zoom, etc.)</p>
 <h3>Word clouds</h3>
-<p>They give all the results of any level, with size of words following discounted probability, including multiple occurences if a word shows up in different N-gram levels.</p>
+<p>They give all the results of any level, with size of words following score / discounted probability, including multiple occurences if a word shows up in different N-gram levels.</p>
 
 <h2>Accuracy</h2>
+<p>This tool is designed to give prediction accuracy for each algorithm for a text entered by application user.</p>
 <p>You can either choose the quality level, by clicking on the quality button bar:
 <ul>
-<li>High : data come from 10% of the original data</li>
-<li>Medium : data come from 1% of the original data</li>
-<li>Low : data come from 0.1% of the original data</li>
+<li>High : training data from 10% of the original data</li>
+<li>Medium : training data from 1% of the original data</li>
+<li>Low : training data from 0.1% of the original data</li>
 </ul></p>
-<p>Then you have to paste a text of a couple of sentences. Note that higher is the quality, and longer is the text, slower is the accuracy calculation.</p>
+<p>Then you have to paste a text of a couple of sentences. Note that higher is the quality, and longer is the text, slower is the accuracy calculation. Note as well that profanity words will lower accuracy, as they were excluded from possible prediction results.</p>
 <p>After clicking on "Process" button, a message "Work in progress,. Please wait..." shows up.</p>
 <p>As processing is complete, a table on the right gives the accuracy rates (accuracy = 1 - error rate), for each algorithm
 <ul>
@@ -124,7 +127,15 @@ Acc_3: accuracy of first 3 predictions (proportion of cases where the word to gu
 <li>
 Acc_10: accuracy of first 10 predictions (proportion of cases where the word to guess is in the 10 first predictions)</li>
 </ul></p>
-<p>On left hand side, details are provided about accuracy computation, following the format below:<br>
-[prediction function] [trigram used for prediction] &gt; [predicted word] ([word to guess])</p>
+<p>On left hand side, details are provided about accuracy computation, in a table form, with the following columns:
+<ul>
+<li>input : text provided to the prediction function</li>
+<li>sbo : first prediction by Stupid Backoff algorithm</li>
+<li>sbo_stem : first prediction by Stupid Backoff with stemming algorithm</li>
+<li>kbo : first prediction by Katz Backoff algorithm</li>
+<li>kbo_stem : first prediction by Katz Backoff with stemming algorithm</li>
+<li>guess : word to guess</li>
+</ul>
+</p>
 </body>
 </html>

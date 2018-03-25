@@ -71,7 +71,6 @@ shinyServer(
             shinyjs::removeClass("qual_small", "btn-success")
             shinyjs::addClass("qual_small", "btn-danger")
             shiny::updateRadioButtons(session, "qual_radio", selected = "high")
-            shiny::updateTextInput(session, 'phrase', value = paste(trimws(input$phrase), " "))
           }
         })
         observeEvent(input$qual_medium, {
@@ -83,7 +82,6 @@ shinyServer(
             shinyjs::removeClass("qual_small", "btn-success")
             shinyjs::addClass("qual_small", "btn-danger")
             shiny::updateRadioButtons(session, "qual_radio", selected = "medium")
-            shiny::updateTextInput(session, 'phrase', value = paste(trimws(input$phrase), " "))
           }
         })
         observeEvent(input$qual_small, {
@@ -95,7 +93,6 @@ shinyServer(
             shinyjs::removeClass("qual_small", "btn-danger")
             shinyjs::addClass("qual_small", "btn-success")
             shiny::updateRadioButtons(session, "qual_radio", selected = "small")
-            shiny::updateTextInput(session, 'phrase', value = paste(trimws(input$phrase), " "))
           }
         })  
         observeEvent(input$qual_high_acc, {
@@ -130,9 +127,8 @@ shinyServer(
             shinyjs::addClass("qual_small_acc", "btn-success")
             shiny::updateRadioButtons(session, "qual_radio_acc", selected = "small")
           }
-        })  
+        })
         spaceTyped <- reactive({
-          shiny::updateTextInput(session, 'phrase', value = gsub(input$phrase, pattern = "( ){2,}", replacement = ""))
           tail(stringr::str_split(input$phrase, " ")[[1]], 1) == "" | input$phrase == ""
         })
         ngpred <- reactive({
@@ -326,8 +322,6 @@ shinyServer(
                          handlerExpr = {
                            if (unique(ngpred()[["res.gts"]][1:10]$grams)[i] != "END") updateTextInput(session, 'phrase',
                                    value = paste(trimws(input$phrase), unique(ngpred()[["res.gts"]][1:10]$grams)[i], ""))
-                           # else updateTextInput(session, 'phrase',
-                           #                      value = paste(trimws(input$phrase), ".", ""))
                            })
           })
         }
@@ -339,8 +333,6 @@ shinyServer(
                          handlerExpr = {
                            if (unique(ngpred()[["res.gts"]][1:10]$grams)[i] != "END") updateTextInput(session, 'phrase',
                                     value = paste(trimws(input$phrase), unique(ngpred()[["res.gts.stem"]][1:10]$grams)[i], ""))
-                           # else updateTextInput(session, 'phrase',
-                           #                      value = paste(trimws(input$phrase), ".", ""))
                          })
           })
         }
@@ -352,8 +344,6 @@ shinyServer(
                          handlerExpr = {
                            if (unique(ngpred()[["res.gts"]][1:10]$grams)[i] != "END") updateTextInput(session, 'phrase',
                                     value = paste(trimws(input$phrase), unique(ngpred()[["res.ktz"]][1:10]$grams)[i], ""))
-                           # else updateTextInput(session, 'phrase',
-                           #                      value = paste(trimws(input$phrase), ".", ""))
                          })
           })
         }
@@ -365,12 +355,9 @@ shinyServer(
                          handlerExpr = {
                            if (unique(ngpred()[["res.gts"]][1:10]$grams)[i] != "END") updateTextInput(session, 'phrase',
                                     value = paste(trimws(input$phrase), unique(ngpred()[["res.ktz.stem"]][1:10]$grams)[i], ""))
-                           # else updateTextInput(session, 'phrase',
-                           #                      value = paste(trimws(input$phrase), ".", ""))
                          })
           })
         }
-        # div(plotlyOutput("plot1", height = "100%"), align = "center")
         output$benchmarkUI <- renderUI({
           list(
             conditionalPanel(condition="input.show_gts == true", column(nb_col_models(),
@@ -422,7 +409,7 @@ shinyServer(
         })
         output$accuracyTable <- renderTable({
           accuracy_table()
-        }, digits = 4, striped = TRUE, hover = TRUE)
+        }, digits = 6, striped = TRUE, hover = TRUE)
 
 })
 

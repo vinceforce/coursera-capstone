@@ -17,30 +17,30 @@ library(plotly)
 library(knitr)
 
 
-png.4.high <- readRDS("pairedngrams/big/ng1-4.prune.1_png.4.train.rds")
-png.3.high <- readRDS("pairedngrams/big/ng1-4.prune.1_png.3.train.rds")
-png.2.high <- readRDS("pairedngrams/big/ng1-4.prune.1_png.2.train.rds")
-png.1.high <- readRDS("pairedngrams/big/ng1-4.prune.1_png.1.train.rds")
+png.4.high <- readRDS("pairedngrams/big/ng1-4.shiny_png.4.train.rds")
+png.3.high <- readRDS("pairedngrams/big/ng1-4.shiny_png.3.train.rds")
+png.2.high <- readRDS("pairedngrams/big/ng1-4.shiny_png.2.train.rds")
+png.1.high <- readRDS("pairedngrams/big/ng1-4.shiny_png.1.train.rds")
 data.table::setkey(png.4.high, grams.3, grams.0)
 data.table::setkey(png.3.high, grams.2, grams.0)
 data.table::setkey(png.2.high, grams.1, grams.0)
 data.table::setkey(png.1.high, grams.0)
 vocabulary.1.high <- data.table::fread("pairedngrams/big/vocabulary.1.csv")
 
-png.4.medium <- readRDS("pairedngrams/medium/ng1-4.prune.1_png.4.train.rds")
-png.3.medium <- readRDS("pairedngrams/medium/ng1-4.prune.1_png.3.train.rds")
-png.2.medium <- readRDS("pairedngrams/medium/ng1-4.prune.1_png.2.train.rds")
-png.1.medium <- readRDS("pairedngrams/medium/ng1-4.prune.1_png.1.train.rds")
+png.4.medium <- readRDS("pairedngrams/medium/ng1-4.shiny_png.4.train.rds")
+png.3.medium <- readRDS("pairedngrams/medium/ng1-4.shiny_png.3.train.rds")
+png.2.medium <- readRDS("pairedngrams/medium/ng1-4.shiny_png.2.train.rds")
+png.1.medium <- readRDS("pairedngrams/medium/ng1-4.shiny_png.1.train.rds")
 data.table::setkey(png.4.medium, grams.3, grams.0)
 data.table::setkey(png.3.medium, grams.2, grams.0)
 data.table::setkey(png.2.medium, grams.1, grams.0)
 data.table::setkey(png.1.medium, grams.0)
 vocabulary.1.medium <- data.table::fread("pairedngrams/medium/vocabulary.1.csv")
 
-png.4.small <- readRDS("pairedngrams/small/ng1-4.prune.1_png.4.train.rds")
-png.3.small <- readRDS("pairedngrams/small/ng1-4.prune.1_png.3.train.rds")
-png.2.small <- readRDS("pairedngrams/small/ng1-4.prune.1_png.2.train.rds")
-png.1.small <- readRDS("pairedngrams/small/ng1-4.prune.1_png.1.train.rds")
+png.4.small <- readRDS("pairedngrams/small/ng1-4.shiny_png.4.train.rds")
+png.3.small <- readRDS("pairedngrams/small/ng1-4.shiny_png.3.train.rds")
+png.2.small <- readRDS("pairedngrams/small/ng1-4.shiny_png.2.train.rds")
+png.1.small <- readRDS("pairedngrams/small/ng1-4.shiny_png.1.train.rds")
 data.table::setkey(png.4.small, grams.3, grams.0)
 data.table::setkey(png.3.small, grams.2, grams.0)
 data.table::setkey(png.2.small, grams.1, grams.0)
@@ -83,6 +83,7 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
     png.1 <- png.1.small
   }
 
+  print(paste0("ngram.predict : ", input))
   input <- trimws(gsub(tolower(input), pattern = "( ){2,}", replacement = ""))
   if (wordcount(input) == 0) no_input <- TRUE
   else no_input <- FALSE
@@ -108,9 +109,6 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
       if (wordcount(input) == 0) no_input <- TRUE
       else no_input <- FALSE
     }
-    # print(paste0("ngram.predict : input = ", input))
-    # print(paste0("ngram.predict : input.stem = ", input.stem))
-    # print("-----------------------------------")
     options(datatable.nomatch=0)
     
     while (ngram::wordcount(input) > 3) {
@@ -128,7 +126,7 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
         res.ktz <- rbind(res.ktz, data.frame(n = rep(4, nrow(res.matches)), grams.n = res.matches$grams.3,
                                              grams = res.matches$grams.0, p.ktz = res.matches$p.ktz))
       } 
-      matches <- png.4[grams.3.stem == input.stem][order(p.mle, decreasing = TRUE)]
+      matches <- png.4[grams.3.stem == input.stem]
       matches <- matches[!is.na(matches$p.mle)]
       if (nrow(matches) != 0) {
         res.matches <- matches[order(p.mle, decreasing = TRUE)]
@@ -258,20 +256,19 @@ ngram.predict <- function(input, quality, nbrep = 10, d = 0.4, k = 5, preprocess
   res.ktz$grams <- as.character(res.ktz$grams)
   res.ktz.stem$grams.n <- as.character(res.ktz.stem$grams.n)
   res.ktz.stem$grams <- as.character(res.ktz.stem$grams)
-  
+
   if (nbrep!=Inf) {
-    res.gts.out <- res.gts[order(n, p.gts, decreasing = TRUE)][1:(min(dim(res.gts)[1], nbrep))]
-    res.gts.stem.out <- res.gts.stem[order(n, p.gts, decreasing = TRUE)][1:(min(dim(res.gts.stem)[1], nbrep))]
-    res.ktz.out <- res.ktz[order(n, p.ktz, decreasing = TRUE)][1:(min(dim(res.ktz)[1], nbrep))]
-    res.ktz.stem.out <- res.ktz.stem[order(n, p.ktz, decreasing = TRUE)][1:(min(dim(res.ktz.stem)[1], nbrep))]
+    res.gts.out <- res.gts[order(p.gts, decreasing = TRUE)][1:(min(dim(res.gts)[1], nbrep))]
+    res.gts.stem.out <- res.gts.stem[order(p.gts, decreasing = TRUE)][1:(min(dim(res.gts.stem)[1], nbrep))]
+    res.ktz.out <- res.ktz[order(p.ktz, decreasing = TRUE)][1:(min(dim(res.ktz)[1], nbrep))]
+    res.ktz.stem.out <- res.ktz.stem[order(p.ktz, decreasing = TRUE)][1:(min(dim(res.ktz.stem)[1], nbrep))]
   }
   else {
-    res.gts.out <- res.gts[order(n, p.gts, decreasing = TRUE)]
-    res.gts.stem.out <- res.gts.stem[order(n, p.gts, decreasing = TRUE)]
-    res.ktz.out <- res.ktz[order(n, p.ktz, decreasing = TRUE)]
-    res.ktz.stem.out <- res.ktz.stem[order(n, p.ktz, decreasing = TRUE)]
-  }
-  
+    res.gts.out <- res.gts[order(p.gts, decreasing = TRUE)]
+    res.gts.stem.out <- res.gts.stem[order(p.gts, decreasing = TRUE)]
+    res.ktz.out <- res.ktz[order(p.ktz, decreasing = TRUE)]
+    res.ktz.stem.out <- res.ktz.stem[order(p.ktz, decreasing = TRUE)]
+  }  
   return(list(res.gts = res.gts.out, res.gts.stem = res.gts.stem.out, res.ktz = res.ktz.out, res.ktz.stem = res.ktz.stem.out))
   
 }
@@ -286,9 +283,11 @@ ngrams <- function(train.sample, what = "word", nbGram = 4, stem=FALSE, weight=N
     exclude_pattern <- paste0("[^a-zA-Z'’", delim, "-]")
     corpus.training.sample <- corpus_trim(corpus.training.sample, what = "sentences", exclude_pattern = exclude_pattern)
   }
-  corpus.sentences <- quanteda::corpus_reshape(corpus.training.sample, 'sentences', remove_punct = FALSE, remove_separators = TRUE)
-  texts(corpus.sentences) <- stringi::stri_replace_all_regex(tolower(texts(corpus.sentences)), c("^[ ]*", "[.;!? ]*$"), c("BEGIN ", " END"), vectorize_all = FALSE)
-  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), c(" END END"), c(" END"), vectorize_all = FALSE)
+  corpus.sentences <- quanteda::corpus_reshape(corpus.training.sample, 'sentences', remove_punct = TRUE, remove_separators = TRUE)
+  nb_s <- length(texts(corpus.sentences))
+  texts(corpus.sentences) <- stringi::stri_replace_all_regex(tolower(texts(corpus.sentences)), rep("^[ ]*", nb_s), rep("BEGIN ", nb_s), vectorize_all = TRUE)
+  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), rep("[.;!? ]*$", nb_s), rep(" END", nb_s), vectorize_all = TRUE)
+  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), rep(" END END", nb_s), rep(" END", nb_s), vectorize_all = TRUE)
   ngrams.1 <- quanteda::tokens(corpus.sentences, what = "word", remove_numbers = TRUE, remove_punct = TRUE,
                                remove_symbols = TRUE, remove_separators = TRUE,
                                remove_twitter = TRUE, remove_hyphens = TRUE, remove_url = TRUE,
@@ -296,10 +295,17 @@ ngrams <- function(train.sample, what = "word", nbGram = 4, stem=FALSE, weight=N
   dfm.1 <- quanteda::dfm(ngrams.1, tolower = FALSE)
   frequencies.1 <- colSums(dfm.1)
   terms <- names(frequencies.1)
-  terms_not_in_voc <- sapply(setdiff(terms, vocabulary$feature), function(t) paste0(" ", t, " "))
-  unk_terms <- rep(" UNK ", length(terms_not_in_voc))
-  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), terms_not_in_voc, unk_terms, vectorize_all = FALSE)
-  
+  terms_not_in_voc <- sapply(setdiff(tolower(terms), vocabulary$feature), function(t) paste0(" ", t, " "))
+  red <- function(x,y) {
+    paste(x, y , sep = "|")
+  }
+  terms_not_in_voc_regex <- Reduce("red", terms_not_in_voc)
+  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), rep("( [.,;:\"()?!'’-]*)|([.,;:\"()?!'’-]* )", nb_s), rep(" ", nb_s), vectorize_all = TRUE)
+  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), rep(terms_not_in_voc_regex, nb_s), rep(" UNK ", nb_s), vectorize_all = TRUE)
+  vocabulary <- c(vocabulary, "unk")
+  terms_not_in_voc <- sapply(setdiff(tolower(terms), vocabulary$feature), function(t) paste0(" ", t, " "))
+  terms_not_in_voc_regex <- Reduce("red", terms_not_in_voc)
+  texts(corpus.sentences) <- stringi::stri_replace_all_regex(texts(corpus.sentences), rep(terms_not_in_voc_regex, nb_s), rep(" UNK ", nb_s), vectorize_all = TRUE)
   ngrams.train.sample <- quanteda::tokens(corpus.sentences, what = "word", remove_numbers = TRUE, remove_punct = TRUE,
                                           remove_symbols = TRUE, remove_separators = TRUE,
                                           remove_twitter = TRUE, remove_hyphens = TRUE, remove_url = TRUE,
@@ -325,7 +331,7 @@ ngrams <- function(train.sample, what = "word", nbGram = 4, stem=FALSE, weight=N
   return(list(ng.1 = ng.1.train.sample, ng.2 = ng.2.train.sample, ng.3 = ng.3.train.sample, ng.4 = ng.4.train.sample))
 }
 
-computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabulary.1, writetodisk = TRUE) {
+computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabulary.1, writetodisk = TRUE, del_unk = FALSE, n1_correct = TRUE, linreg = TRUE) {
   
   K = 5
   #####################
@@ -333,9 +339,17 @@ computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabul
   #####################
   print("# 1-grams")
   N <- table(ng.1.train$frequency)
+  if (n1_correct) {
+    N.correct.1 <- ng.1.train[feature == "UNK", frequency]
+    if (del_unk) {
+      ng.1.train.unk <- ng.1.train[feature != "UNK"]
+      N <- table(ng.1.train.unk$frequency)
+    }
+    N[1] <- N[1] + N.correct.1
+  }
   
   # Maximum Likelihood
-  N.mle <- sum(as.integer(names(N))*N)
+  N.mle <- sum(ng.1.train$frequency)
   ng.1.train[, p.mle := frequency / N.mle]
   
   ## Good-Turing Smoothing
@@ -349,23 +363,21 @@ computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabul
   }
   ng.1.train$gts.cnt <- sapply(ng.1.train$frequency, function(f) {
     if (f <= 5) return ((f + 1) * (N[as.character(f + 1)] / N[as.character(f)]))
-    # else return (f)
-    else return ((f + 1) * (N.1(f + 1) / N.1(f)))
+    else {
+      if (linreg == TRUE) return ((f + 1) * (N.1(f + 1) / N.1(f)))
+      else return (f)
+    }
   })
   ng.1.train[, d.gts := gts.cnt / frequency]
-  # ng.1.train$d.gts <- sapply(ng.1.train$frequency, function(c) discountfactor.gts(c, N.1, N, k = K))
   N.gts <- sum(ng.1.train$gts.cnt)
-  # N.gts <- sum(as.integer(names(N)) * N)
   ng.1.train[, p.gts := gts.cnt / N.gts]
   
-  # NK <- (K + 1) * N.1(K + 1) / N.1(1)
   NK <- (K + 1) * N[K + 1] / N[1]
   ng.1.train[, d.ktz := ((d.gts - NK) / (1 - NK))]
   
   ng.1.train[, ktz.cnt := d.ktz * frequency]
   N.ktz <- sum(ng.1.train$ktz.cnt)
-  ng.1.train[, p.ktz := ktz.cnt / N.ktz]
-  # ng.1.train[, p.ktz := d.ktz * p.mle]
+  ng.1.train[, p.ktz := d.ktz * p.mle]
   
   
   #####################
@@ -373,11 +385,16 @@ computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabul
   #####################
   print("# 2-grams")
   N <- table(ng.2.train$frequency)
-  
-  # Maximum Likelihood
-  # N.mle <- sum(as.integer(names(N)))
-  # ng.2.train[, p.mle := frequency / N.mle]
-  
+  if (n1_correct) {
+    unk_grams <- grep("UNK", ng.2.train$feature, value = TRUE)
+    N.correct.1 <- sum(ng.2.train[is.element(feature, unk_grams), frequency])
+    if (del_unk) {
+      ng.2.train.unk <- ng.2.train[!is.element(feature, unk_grams)]
+      N <- table(ng.2.train.unk$frequency)
+    }
+    N[1] <- N[1] + N.correct.1
+  }
+
   ## Good-Turing Smoothing
   X <- log(as.integer(names(N)))
   Y <- log(N)
@@ -389,37 +406,38 @@ computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabul
   }
   ng.2.train$gts.cnt <- sapply(ng.2.train$frequency, function(f) {
     if (f <= 5) return ((f + 1) * (N[f + 1] / N[f]))
-    # else return (f)
-    else return ((f + 1) * (N.2(f + 1) / N.2(f)))
+    else {
+      if (linreg == TRUE) return ((f + 1) * (N.2(f + 1) / N.2(f)))
+      else return (f)
+    }  
   })
   ng.2.train[, d.gts := gts.cnt / frequency]
-  # ng.2.train$d.gts <- sapply(ng.2.train$frequency, function(c) discountfactor.gts(c, N.2, N, k = K))
   N.gts <- sum(ng.2.train$gts.cnt)
-  # N.gts <- sum(as.integer(names(N)) * N)
   ng.2.train[, p.gts := gts.cnt / N.gts]
   
-  # NK <- (K + 1) * N.2(K + 1) / N.2(1)
   NK <- (K + 1) * N[K + 1] / N[1]
   ng.2.train[, d.ktz := ((d.gts - NK) / (1 - NK))]
   
   ng.2.train[, ktz.cnt := d.ktz * frequency]
-  N.ktz <- sum(ng.2.train$ktz.cnt)
-  ng.2.train[, p.ktz := ktz.cnt / N.ktz]
-  
+
   #####################
   # 3-grams
   #####################
   print("# 3-grams")
   N <- table(ng.3.train$frequency)
-  N.cnt <- length(N)
-  
-  # Maximum Likelihood
-  # N.mle <- sum(as.integer(names(N)))
-  # ng.3.train[, p.mle := frequency / N.mle]
-  
+  if (n1_correct) {
+    unk_grams <- grep("UNK", ng.3.train$feature, value = TRUE)
+    N.correct.1 <- sum(ng.3.train[is.element(feature, unk_grams), frequency])
+    if (del_unk) {
+      ng.3.train.unk <- ng.3.train[!is.element(feature, unk_grams)]
+      N <- table(ng.3.train.unk$frequency)
+    }
+    N[1] <- N[1] + N.correct.1
+  }
+
   ## Good-Turing Smoothing
-  X <- log(as.integer(names(N[(K+1):N.cnt])))
-  Y <- log(N[(K+1):N.cnt])
+  X <- log(as.integer(names(N)))
+  Y <- log(N)
   mod <- lm(Y~X)
   a0.3 <- summary(mod)$coefficients[1]
   a1.3 <- summary(mod)$coefficients[2]
@@ -428,33 +446,35 @@ computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabul
   }
   ng.3.train$gts.cnt <- sapply(ng.3.train$frequency, function(f) {
     if (f <= 5) return ((f + 1) * (N[f + 1] / N[f]))
-    # else return (f)
-    else return ((f + 1) * (N.3(f + 1) / N.3(f)))
+    else {
+      if (linreg == TRUE) return ((f + 1) * (N.3(f + 1) / N.3(f)))
+      else return (f)
+    }
   })
   ng.3.train[, d.gts := gts.cnt / frequency]
-  # ng.3.train$d.gts <- sapply(ng.3.train$frequency, function(c) discountfactor.gts(c, N.3, N, k = K))
   N.gts <- sum(ng.3.train$gts.cnt)
-  # N.gts <- sum(as.integer(names(N)) * N)
   ng.3.train[, p.gts := gts.cnt / N.gts]
   
-  # NK <- (K + 1) * N.3(K + 1) / N.3(1)
   NK <- (K + 1) * N[K + 1] / N[1]
   ng.3.train[, d.ktz := ((d.gts - NK) / (1 - NK))]
   
   ng.3.train[, ktz.cnt := d.ktz * frequency]
-  N.ktz <- sum(ng.3.train$ktz.cnt)
-  ng.3.train[, p.ktz := ktz.cnt / N.ktz]
-  
+
   #####################
   # 4-grams
   #####################
   print("# 4-grams")
   N <- table(ng.4.train$frequency)
-  
-  # Maximum Likelihood
-  # N.mle <- sum(as.integer(names(N)))
-  # ng.4.train[, p.mle := frequency / N.mle]
-  
+  if (n1_correct) {
+    unk_grams <- grep("UNK", ng.4.train$feature, value = TRUE)
+    N.correct.1 <- sum(ng.4.train[is.element(feature, unk_grams), frequency])
+    if (del_unk) {
+      ng.4.train.unk <- ng.4.train[!is.element(feature, unk_grams)]
+      N <- table(ng.4.train.unk$frequency)
+    }
+    N[1] <- N[1] + N.correct.1
+  }
+
   ## Good-Turing Smoothing
   X <- log(as.integer(names(N)))
   Y <- log(N)
@@ -466,23 +486,20 @@ computeProbs <- function(ng.1.train, ng.2.train, ng.3.train, ng.4.train, vocabul
   }
   ng.4.train$gts.cnt <- sapply(ng.4.train$frequency, function(f) {
     if (f <= 5) return ((f + 1) * (N[f + 1] / N[f]))
-    # else return (f)
-    else return ((f + 1) * (N.4(f + 1) / N.4(f)))
+    else {
+      if (linreg == TRUE) return ((f + 1) * (N.4(f + 1) / N.4(f)))
+      else return (f)
+    }
   })
   ng.4.train[, d.gts := gts.cnt / frequency]
-  # ng.4.train$d.gts <- sapply(ng.4.train$frequency, function(c) discountfactor.gts(c, N.4, N, k = K))
   N.gts <- sum(ng.4.train$gts.cnt)
-  # N.gts <- sum(as.integer(names(N)) * N)
   ng.4.train[, p.gts := gts.cnt / N.gts]
   
-  # NK <- (K + 1) * N.4(K + 1) / N.4(1)
   NK <- (K + 1) * N[K + 1] / N[1]
   ng.4.train[, d.ktz := ((d.gts - NK) / (1 - NK))]
   
   ng.4.train[, ktz.cnt := d.ktz * frequency]
-  N.ktz <- sum(ng.4.train$ktz.cnt)
-  ng.4.train[, p.ktz := ktz.cnt / N.ktz]
-  
+
   if (writetodisk) {
     data.table::fwrite(ng.1.train, file = paste0("ngrams/1/ng1-4_ng.1.train.prob.csv"), row.names = FALSE)
     data.table::fwrite(ng.2.train, file = paste0("ngrams/2/ng1-4_ng.2.train.prob.csv"), row.names = FALSE)
@@ -508,9 +525,9 @@ pairedngrams <- function(ngram, nbGram, stem = FALSE, pngram1 = NULL, k = 5) {
     if (nbGram > 2) grams.n.1 <- sapply(split.ngram, function(s) {if (length(s) == nbGram) Reduce("paste", s[2:(nbGram-1)])})
     grams.0 <- sapply(split.ngram, function(s) {if (length(s) == nbGram) s[nbGram]})
     if (nbGram > 2) ng.paired <- data.table(grams = ngram$feature, grams.n = grams.n, grams.n.1 = grams.n.1, grams.n.stem = grams.n.stem, grams.0 = grams.0, freq = ngram$frequency,
-                                            d.gts = ngram$d.gts, d.ktz = ngram$d.ktz, p.ktz = ngram$p.ktz)
+                                            d.gts = ngram$d.gts, d.ktz = ngram$d.ktz, gts.cnt = ngram$gts.cnt)
     else ng.paired <- data.table(grams = ngram$feature, grams.n = grams.n, grams.n.stem = grams.n.stem, grams.0 = grams.0, freq = ngram$frequency,
-                                 d.gts = ngram$d.gts, d.ktz = ngram$d.ktz, p.ktz = ngram$p.ktz)
+                                 d.gts = ngram$d.gts, d.ktz = ngram$d.ktz, gts.cnt = ngram$gts.cnt)
     
     data.table::setnames(pngram1, old=paste0("grams.", nbGram - 1), new="grams.n")
     if (nbGram > 2) data.table::setnames(pngram1, old=paste0("grams.", nbGram - 2), new="grams.n.1")
@@ -518,10 +535,12 @@ pairedngrams <- function(ngram, nbGram, stem = FALSE, pngram1 = NULL, k = 5) {
     ng.paired[pngram1, on=.(grams.n), freq.n:=i.freq]
     ng.paired[, p.mle:=(freq / freq.n)]
     ng.paired[, p.gts:=d.gts * p.mle]
-    # ng.paired[, p.ktz:=d.ktz * p.mle]
+    N.gts <- sum(ng.paired$p.gts)
+    ng.paired[, p.gts:=(p.gts / N.gts)]
+    ng.paired[, p.ktz:=d.ktz * p.mle]
     
     if (nbGram > 2) ng.paired[pngram1, on=.(grams.0, grams.n.1), p.ktz.n:=i.p.ktz]
-    else ng.paired[pngram1, on=.(grams.0), p.ktz.n:=i.p.mle]
+    else ng.paired[pngram1, on=.(grams.0), p.ktz.n:=i.p.ktz]
     ng.paired.p.ktz.n.sum <- ng.paired[, sum(p.ktz.n), by=grams.n]
     data.table::setnames(ng.paired.p.ktz.n.sum, old="V1", new="p.ktz.n.sum")
     ng.paired[ng.paired.p.ktz.n.sum, on=.(grams.n), sigma.k.n:=i.p.ktz.n.sum]
@@ -530,7 +549,7 @@ pairedngrams <- function(ngram, nbGram, stem = FALSE, pngram1 = NULL, k = 5) {
     data.table::setnames(ng.paired.p.ktz.sum, old="V1", new="p.ktz.sum")
     ng.paired[ng.paired.p.ktz.sum, on=.(grams.n), beta.k.n:=i.p.ktz.sum]
     ng.paired[, alpha:=(1-beta.k.n)/(1-sigma.k.n)]
-    
+
     data.table::setnames(pngram1, old="grams.n", new=paste0("grams.", nbGram - 1))
     if (nbGram > 2) data.table::setnames(pngram1, old="grams.n.1", new=paste0("grams.", nbGram - 2))
     data.table::setnames(ng.paired, old="grams", new=paste0("grams.", nbGram))
@@ -540,88 +559,6 @@ pairedngrams <- function(ngram, nbGram, stem = FALSE, pngram1 = NULL, k = 5) {
     data.table::setnames(ng.paired, old = "freq.n", new = paste0("freq.", nbGram - 1))
   }
   return(ng.paired[order(p.gts, decreasing = TRUE)])
-}
-
-ngram.predict.gts <- function(ngcomb, d = d, session, traceVals, quality) {
-  ngsplit <- str_split(ngcomb, "_/_")[[1]]
-  ng <- ngsplit[1]
-  grams0 <- ngsplit[2]
-  print(paste("ngram.predict.sbo :", ng))
-  ngp <- ngram.predict(ng, quality, nbrep = 10, d = d, preprocessinput = FALSE)
-  pred.gts <- ngp[["res.gts"]]
-  tracePred <- paste(" > ", pred.gts[1, n], " | ", pred.gts[1, grams], sep = "")
-  traceVals$content <- paste(traceVals$content, paste0("ngram.predict.sbo : ", ng, tracePred, " (", grams0, ")"), "\n")
-  return (pred.gts)
-}
-ngram.predict.gts.stem <- function(ngcomb, d = d, session, traceVals, quality) {
-  ngsplit <- str_split(ngcomb, "_/_")[[1]]
-  ng <- ngsplit[1]
-  grams0 <- ngsplit[2]
-  print(paste("ngram.predict.sbo.stem :", ng))
-  ngp <- ngram.predict(ng, quality, nbrep = 10, d = d, preprocessinput = FALSE)
-  pred.gts <- ngp[["res.gts.stem"]]
-  tracePred <- paste(" > ", pred.gts[1, n], " | ", pred.gts[1, grams], sep = "")
-  traceVals$content <- paste(traceVals$content, paste0("ngram.predict.sbo.stem : ", ng, tracePred, " (", grams0, ")"), "\n")
-  return (pred.gts)
-}
-ngram.predict.ktz <- function(ngcomb, d = d, session, traceVals, quality) {
-  ngsplit <- str_split(ngcomb, "_/_")[[1]]
-  ng <- ngsplit[1]
-  grams0 <- ngsplit[2]
-  print(paste("ngram.predict.kbo :", ng))
-  ngp <- ngram.predict(ng, quality, nbrep = 10, d = d, preprocessinput = FALSE)
-  pred.ktz <- ngp[["res.ktz"]]
-  tracePred <- paste(" > ", pred.ktz[1, n], " | ", pred.ktz[1, grams], sep = "")
-  traceVals$content <- paste(traceVals$content, paste0("ngram.predict.kbo : ", ng, tracePred, " (", grams0, ")"), "\n")
-  return (pred.ktz)
-}
-ngram.predict.ktz.stem <- function(ngcomb, d = d, session, traceVals, quality) {
-  ngsplit <- str_split(ngcomb, "_/_")[[1]]
-  ng <- ngsplit[1]
-  grams0 <- ngsplit[2]
-  print(paste("ngram.predict.kbo.stem :", ng))
-  ngp <- ngram.predict(ng, quality, nbrep = 10, d = d, preprocessinput = FALSE)
-  pred.ktz <- ngp[["res.ktz.stem"]]
-  tracePred <- paste(" > ", pred.ktz[1, n], " | ", pred.ktz[1, grams], sep = "")
-  traceVals$content <- paste(traceVals$content, paste0("ngram.predict.kbo.stem : ", ng, tracePred, " (", grams0, ")"), "\n")
-  return (pred.ktz)
-}
-
-ngram.accuracy <- function(ngrams.test, d = d, pred.fn, session, traceVals, quality) {
-  # predict.dev.gram.list <- list()
-  # for (i in 1:length(ngrams.test$grams.3)) {
-  #   predict.dev.gram.list[[i]] <- do.call(pred.fn, list(ng = ngrams.test$grams.3[i], d = d, session, traceVals, ngrams.test$grams.0[i]))
-  # }
-  # print(str(predict.dev.gram.list))
-  predict.dev <- sapply(paste(ngrams.test$grams.3, ngrams.test$grams.0, sep="_/_"), pred.fn, d = d, session, traceVals, quality)
-  predict.dev.gram.list <- predict.dev[3,]
-
-  predict.dev.gram.1 <- sapply(predict.dev.gram.list, function(listitem) listitem[1])
-  predict.dev.gram.2 <- sapply(predict.dev.gram.list, function(listitem) listitem[2])
-  predict.dev.gram.3 <- sapply(predict.dev.gram.list, function(listitem) listitem[3])
-  predict.dev.gram.4 <- sapply(predict.dev.gram.list, function(listitem) listitem[4])
-  predict.dev.gram.5 <- sapply(predict.dev.gram.list, function(listitem) listitem[5])
-  predict.dev.gram.6 <- sapply(predict.dev.gram.list, function(listitem) listitem[6])
-  predict.dev.gram.7 <- sapply(predict.dev.gram.list, function(listitem) listitem[7])
-  predict.dev.gram.8 <- sapply(predict.dev.gram.list, function(listitem) listitem[8])
-  predict.dev.gram.9 <- sapply(predict.dev.gram.list, function(listitem) listitem[9])
-  predict.dev.gram.10 <- sapply(predict.dev.gram.list, function(listitem) listitem[10])
-  pred.dt <- data.table(grams.pred.1 = predict.dev.gram.1, grams.pred.2 = predict.dev.gram.2, grams.pred.3 = predict.dev.gram.3,
-                        grams.pred.4 = predict.dev.gram.4, grams.pred.5 = predict.dev.gram.5, grams.pred.6 = predict.dev.gram.6,
-                        grams.pred.7 = predict.dev.gram.7, grams.pred.8 = predict.dev.gram.8, grams.pred.9 = predict.dev.gram.9,
-                        grams.pred.10 = predict.dev.gram.10, freq = ngrams.test$freq, grams.0 = ngrams.test$grams.0)
-  errors <- pred.dt[grams.pred.1 != grams.0]
-  errors.weight <- sum(errors$freq)
-  error_rate <- errors.weight / sum(ngrams.test$freq)
-  errors.3 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0]
-  errors.3.weight <- sum(errors.3$freq)
-  error.3_rate <- errors.3.weight / sum(ngrams.test$freq)
-  errors.10 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0 & grams.pred.4 != grams.0
-                       & grams.pred.5 != grams.0 & grams.pred.6 != grams.0 & grams.pred.7 != grams.0 & grams.pred.8 != grams.0
-                       & grams.pred.9 != grams.0 & grams.pred.10 != grams.0]
-  errors.10.weight <- sum(errors.10$freq)
-  error.10_rate <- errors.10.weight / sum(ngrams.test$freq)
-  return (list(acc = 1 - error_rate, acc.3 = 1 - error.3_rate, acc.10 = 1 - error.10_rate))
 }
 
 parallelizeTask <- function(task, ...) {
@@ -661,18 +598,143 @@ accuracyProcess <- function(texttoprocess, quality, session, traceVals) {
   png.1.testing.dev.sample[png.2.testing.dev.sample, on=.(grams.0), alpha.n:=i.alpha]
   png.2.testing.dev.sample[png.3.testing.dev.sample, on=.(grams.1), alpha.n:=i.alpha]
   png.3.testing.dev.sample[png.4.testing.dev.sample, on=.(grams.2), alpha.n:=i.alpha]
-  acc.gts <- ngram.accuracy(png.4.testing.dev.sample, d = d, "ngram.predict.gts", session, traceVals, quality)
-  acc.gts.stem <- ngram.accuracy(png.4.testing.dev.sample, d = d, "ngram.predict.gts.stem", session, traceVals, quality)
-  acc.ktz <- ngram.accuracy(png.4.testing.dev.sample, d = d, "ngram.predict.ktz", session, traceVals, quality)
-  acc.ktz.stem <- ngram.accuracy(png.4.testing.dev.sample, d = d, "ngram.predict.ktz.stem", session, traceVals, quality)
-  # acc.gts <- parallelizeTask(ngram.accuracy, png.4.testing.dev.sample, d = d, ngram.predict.gts, session, traceVals)
-  # acc.gts.stem <- parallelizeTask(ngram.accuracy, png.4.testing.dev.sample, d = d, ngram.predict.gts.stem, session, traceVals)
-  # acc.ktz <- parallelizeTask(ngram.accuracy, png.4.testing.dev.sample, d = d, ngram.predict.ktz, session, traceVals)
-  # acc.ktz.stem <- parallelizeTask(ngram.accuracy, png.4.testing.dev.sample, d = d, ngram.predict.ktz.stem, session, traceVals)
-  accuracy_table <- data.frame(Type = c("SBO", "SBO-stemming", "KBO", "KBO-stemming"),
-                               Acc = c(acc.gts[["acc"]], acc.gts.stem[["acc"]], acc.ktz[["acc"]], acc.ktz.stem[["acc"]]),
-                               Acc_3 = c(acc.gts[["acc.3"]], acc.gts.stem[["acc.3"]], acc.ktz[["acc.3"]], acc.ktz.stem[["acc.3"]]),
-                               Acc_10 = c(acc.gts[["acc.10"]], acc.gts.stem[["acc.10"]], acc.ktz[["acc.10"]], acc.ktz.stem[["acc.10"]]))
+
+  
+  acc_test <- ngram.accuracy.all(png.4.testing.dev.sample, d = d, quality)
+  accuracy_table <- acc_test[["df.res"]]
+  accuracy_trace <- acc_test[["df.trace"]]
+  s_trace <- knitr::kable(accuracy_trace)
+  traceVals$content <- Reduce("pasteCRLF", s_trace)
   shinyjs::hide("workinprogress")
-  return(accuracy_table)
+  return(accuracy_table)  
+}
+
+pasteCRLF <- function(x, y) {
+    paste(x, y, sep = "\n")
+}
+
+ngram.accuracy.all <- function(ngrams.test, d = d, quality) {
+  predict.dev.mat <- sapply(ngrams.test$grams.3, ngram.predict, quality, nbrep = 10, d = 0.4, k = 5, preprocessinput = FALSE)
+  df.res <- data.frame()
+  df.trace <- data.frame(input = ngrams.test$grams.3)
+  
+  predict.dev.gram.list <- sapply(predict.dev.mat["res.gts",], function(item) item$grams)
+  predict.dev.gram.1 <- predict.dev.gram.list[1,]
+  predict.dev.gram.2 <- predict.dev.gram.list[2,]
+  predict.dev.gram.3 <- predict.dev.gram.list[3,]
+  predict.dev.gram.4 <- predict.dev.gram.list[4,]
+  predict.dev.gram.5 <- predict.dev.gram.list[5,]
+  predict.dev.gram.6 <- predict.dev.gram.list[6,]
+  predict.dev.gram.7 <- predict.dev.gram.list[7,]
+  predict.dev.gram.8 <- predict.dev.gram.list[8,]
+  predict.dev.gram.9 <- predict.dev.gram.list[9,]
+  predict.dev.gram.10 <- predict.dev.gram.list[10,]
+  pred.dt <- data.table(grams.pred.1 = predict.dev.gram.1, grams.pred.2 = predict.dev.gram.2, grams.pred.3 = predict.dev.gram.3,
+                        grams.pred.4 = predict.dev.gram.4, grams.pred.5 = predict.dev.gram.5, grams.pred.6 = predict.dev.gram.6,
+                        grams.pred.7 = predict.dev.gram.7, grams.pred.8 = predict.dev.gram.8, grams.pred.9 = predict.dev.gram.9,
+                        grams.pred.10 = predict.dev.gram.10, freq = ngrams.test$freq, grams.0 = ngrams.test$grams.0)
+  errors <- pred.dt[grams.pred.1 != grams.0]
+  errors.weight <- sum(errors$freq)
+  error_rate <- errors.weight / sum(ngrams.test$freq)
+  errors.3 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0]
+  errors.3.weight <- sum(errors.3$freq)
+  error.3_rate <- errors.3.weight / sum(ngrams.test$freq)
+  errors.10 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0 & grams.pred.4 != grams.0
+                       & grams.pred.5 != grams.0 & grams.pred.6 != grams.0 & grams.pred.7 != grams.0 & grams.pred.8 != grams.0
+                       & grams.pred.9 != grams.0 & grams.pred.10 != grams.0]
+  errors.10.weight <- sum(errors.10$freq)
+  error.10_rate <- errors.10.weight / sum(ngrams.test$freq)
+  df.res <- rbind(df.res, data.frame(Type = "SBO", Acc = 1 - error_rate, Acc_3 = 1 - error.3_rate, Acc_10 = 1 - error.10_rate))
+  df.trace <- cbind(df.trace, data.frame(sbo = predict.dev.gram.1))
+  
+  predict.dev.gram.list <- sapply(predict.dev.mat["res.gts.stem",], function(item) item$grams)
+  predict.dev.gram.1 <- predict.dev.gram.list[1,]
+  predict.dev.gram.2 <- predict.dev.gram.list[2,]
+  predict.dev.gram.3 <- predict.dev.gram.list[3,]
+  predict.dev.gram.4 <- predict.dev.gram.list[4,]
+  predict.dev.gram.5 <- predict.dev.gram.list[5,]
+  predict.dev.gram.6 <- predict.dev.gram.list[6,]
+  predict.dev.gram.7 <- predict.dev.gram.list[7,]
+  predict.dev.gram.8 <- predict.dev.gram.list[8,]
+  predict.dev.gram.9 <- predict.dev.gram.list[9,]
+  predict.dev.gram.10 <- predict.dev.gram.list[10,]
+  pred.dt <- data.table(grams.pred.1 = predict.dev.gram.1, grams.pred.2 = predict.dev.gram.2, grams.pred.3 = predict.dev.gram.3,
+                        grams.pred.4 = predict.dev.gram.4, grams.pred.5 = predict.dev.gram.5, grams.pred.6 = predict.dev.gram.6,
+                        grams.pred.7 = predict.dev.gram.7, grams.pred.8 = predict.dev.gram.8, grams.pred.9 = predict.dev.gram.9,
+                        grams.pred.10 = predict.dev.gram.10, freq = ngrams.test$freq, grams.0 = ngrams.test$grams.0)
+  errors <- pred.dt[grams.pred.1 != grams.0]
+  errors.weight <- sum(errors$freq)
+  error_rate <- errors.weight / sum(ngrams.test$freq)
+  errors.3 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0]
+  errors.3.weight <- sum(errors.3$freq)
+  error.3_rate <- errors.3.weight / sum(ngrams.test$freq)
+  errors.10 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0 & grams.pred.4 != grams.0
+                       & grams.pred.5 != grams.0 & grams.pred.6 != grams.0 & grams.pred.7 != grams.0 & grams.pred.8 != grams.0
+                       & grams.pred.9 != grams.0 & grams.pred.10 != grams.0]
+  errors.10.weight <- sum(errors.10$freq)
+  error.10_rate <- errors.10.weight / sum(ngrams.test$freq)
+  df.res <- rbind(df.res, data.frame(Type = "SBO-stem", Acc = 1 - error_rate, Acc_3 = 1 - error.3_rate, Acc_10 = 1 - error.10_rate))
+  df.trace <- cbind(df.trace, data.frame(sbo_stem = predict.dev.gram.1))
+  
+  predict.dev.gram.list <- sapply(predict.dev.mat["res.ktz",], function(item) item$grams)
+  predict.dev.gram.1 <- predict.dev.gram.list[1,]
+  predict.dev.gram.2 <- predict.dev.gram.list[2,]
+  predict.dev.gram.3 <- predict.dev.gram.list[3,]
+  predict.dev.gram.4 <- predict.dev.gram.list[4,]
+  predict.dev.gram.5 <- predict.dev.gram.list[5,]
+  predict.dev.gram.6 <- predict.dev.gram.list[6,]
+  predict.dev.gram.7 <- predict.dev.gram.list[7,]
+  predict.dev.gram.8 <- predict.dev.gram.list[8,]
+  predict.dev.gram.9 <- predict.dev.gram.list[9,]
+  predict.dev.gram.10 <- predict.dev.gram.list[10,]
+  pred.dt <- data.table(grams.pred.1 = predict.dev.gram.1, grams.pred.2 = predict.dev.gram.2, grams.pred.3 = predict.dev.gram.3,
+                        grams.pred.4 = predict.dev.gram.4, grams.pred.5 = predict.dev.gram.5, grams.pred.6 = predict.dev.gram.6,
+                        grams.pred.7 = predict.dev.gram.7, grams.pred.8 = predict.dev.gram.8, grams.pred.9 = predict.dev.gram.9,
+                        grams.pred.10 = predict.dev.gram.10, freq = ngrams.test$freq, grams.0 = ngrams.test$grams.0)
+  errors <- pred.dt[grams.pred.1 != grams.0]
+  errors.weight <- sum(errors$freq)
+  error_rate <- errors.weight / sum(ngrams.test$freq)
+  errors.3 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0]
+  errors.3.weight <- sum(errors.3$freq)
+  error.3_rate <- errors.3.weight / sum(ngrams.test$freq)
+  errors.10 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0 & grams.pred.4 != grams.0
+                       & grams.pred.5 != grams.0 & grams.pred.6 != grams.0 & grams.pred.7 != grams.0 & grams.pred.8 != grams.0
+                       & grams.pred.9 != grams.0 & grams.pred.10 != grams.0]
+  errors.10.weight <- sum(errors.10$freq)
+  error.10_rate <- errors.10.weight / sum(ngrams.test$freq)
+  df.res <- rbind(df.res, data.frame(Type = "KBO", Acc = 1 - error_rate, Acc_3 = 1 - error.3_rate, Acc_10 = 1 - error.10_rate))
+  df.trace <- cbind(df.trace, data.frame(kbo = predict.dev.gram.1))
+  
+  predict.dev.gram.list <- sapply(predict.dev.mat["res.ktz.stem",], function(item) item$grams)
+  predict.dev.gram.1 <- predict.dev.gram.list[1,]
+  predict.dev.gram.2 <- predict.dev.gram.list[2,]
+  predict.dev.gram.3 <- predict.dev.gram.list[3,]
+  predict.dev.gram.4 <- predict.dev.gram.list[4,]
+  predict.dev.gram.5 <- predict.dev.gram.list[5,]
+  predict.dev.gram.6 <- predict.dev.gram.list[6,]
+  predict.dev.gram.7 <- predict.dev.gram.list[7,]
+  predict.dev.gram.8 <- predict.dev.gram.list[8,]
+  predict.dev.gram.9 <- predict.dev.gram.list[9,]
+  predict.dev.gram.10 <- predict.dev.gram.list[10,]
+  pred.dt <- data.table(grams.pred.1 = predict.dev.gram.1, grams.pred.2 = predict.dev.gram.2, grams.pred.3 = predict.dev.gram.3,
+                        grams.pred.4 = predict.dev.gram.4, grams.pred.5 = predict.dev.gram.5, grams.pred.6 = predict.dev.gram.6,
+                        grams.pred.7 = predict.dev.gram.7, grams.pred.8 = predict.dev.gram.8, grams.pred.9 = predict.dev.gram.9,
+                        grams.pred.10 = predict.dev.gram.10, freq = ngrams.test$freq, grams.0 = ngrams.test$grams.0)
+  errors <- pred.dt[grams.pred.1 != grams.0]
+  errors.weight <- sum(errors$freq)
+  error_rate <- errors.weight / sum(ngrams.test$freq)
+  errors.3 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0]
+  errors.3.weight <- sum(errors.3$freq)
+  error.3_rate <- errors.3.weight / sum(ngrams.test$freq)
+  errors.10 <- pred.dt[grams.pred.1 != grams.0 & grams.pred.2 != grams.0 & grams.pred.3 != grams.0 & grams.pred.4 != grams.0
+                       & grams.pred.5 != grams.0 & grams.pred.6 != grams.0 & grams.pred.7 != grams.0 & grams.pred.8 != grams.0
+                       & grams.pred.9 != grams.0 & grams.pred.10 != grams.0]
+  errors.10.weight <- sum(errors.10$freq)
+  error.10_rate <- errors.10.weight / sum(ngrams.test$freq)
+  df.res <- rbind(df.res, data.frame(Type = "KBO-stem", Acc = 1 - error_rate, Acc_3 = 1 - error.3_rate, Acc_10 = 1 - error.10_rate))
+  df.trace <- cbind(df.trace, data.frame(kbo_stem = predict.dev.gram.1))
+  
+  df.trace <- cbind(df.trace, data.frame(guess = ngrams.test$grams.0))
+  
+  return (list(df.res = df.res, df.trace = df.trace))
 }

@@ -43,11 +43,10 @@ shinyUI(
                     radioButtons("qual_radio", label = NULL, choices = list("high", "medium", "small"), selected = "medium")
                  )
                 )
-                
              )
           ),
          fluidRow(
-           textInput('phrase', label='Enter a phrase', value='Show must go ', width="100%")
+           textInput('phrase', label='Type a text', value='Show must go ', width="100%")
          ),
          fluidRow(
           uiOutput('benchmarkUI')
@@ -112,7 +111,7 @@ The larger-than-life star of \"Cyrano de Bergerac\" and the Asterix & Obelix fra
           )
         )
      ),
-     tabPanel("How to use",
+     tabPanel("Instructions",
         includeHTML("html/HowToUse.html")
      ),
      tabPanel("Development lines",
@@ -123,8 +122,8 @@ The larger-than-life star of \"Cyrano de Bergerac\" and the Asterix & Obelix fra
      ),
      tabPanel("Code",
               h3("Github repository"),
-              p("Code of the application (ui.R, server.R) is available on the link below"),
-              a("https://github.com/vinceforce/bdp", href = "https://github.com/vinceforce/bdp", target = "_blank")
+              p("Code of shiny application, and of R presentation are available on the link below"),
+              a("https://github.com/vinceforce/coursera-capstone", href = "https://github.com/vinceforce/coursera-capstone", target = "_blank")
      )
   )
   )
